@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>sld 30 Jahre – Live Quiz</title>
+  <title>sld Jubiläums-Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: sans-serif; background: #111; color: #fff; text-align: center; padding: 2em; }
@@ -21,75 +21,45 @@
 </head>
 <body>
 
-  <div id="startScreen">
-    <h1>🎉 sld Jubiläums-Quiz 🎉</h1>
-    <p>8 Fragen · 30 Sekunden pro Frage · Punkte für Schnelligkeit</p>
-    <input type="text" id="playerName" placeholder="Gib deinen Namen ein" />
-    <br>
-    <button onclick="startQuiz()">Quiz starten</button>
-  </div>
+<div id="startScreen">
+  <h1>🎉 sld Jubiläums-Quiz 🎉</h1>
+  <p>8 Fragen · 30 Sekunden pro Frage · Punkte für Schnelligkeit</p>
+  <input type="text" id="playerName" placeholder="Gib deinen Namen ein" />
+  <br>
+  <button onclick="startQuiz()">Quiz starten</button>
+</div>
 
-  <div id="quizScreen" class="hidden">
-    <div class="question-box">
-      <div id="questionNum"></div>
-      <div id="questionText"></div>
-      <div class="timer" id="timer">30</div>
-      <div class="answers" id="answerButtons"></div>
-    </div>
+<div id="quizScreen" class="hidden">
+  <div class="question-box">
+    <div id="questionNum"></div>
+    <div id="questionText"></div>
+    <div class="timer" id="timer">30</div>
+    <div class="answers" id="answerButtons"></div>
   </div>
+</div>
 
-  <div id="resultScreen" class="hidden">
-    <h2>🏁 Quiz beendet!</h2>
-    <p id="finalScore"></p>
-    <p>Scanne deinen Namen + Punkte, damit der Moderator den Sieger küren kann 👇</p>
-    <div class="leaderboard" id="leaderboard">
-      <h3>Dein Ergebnis</h3>
-      <ol id="leaderboardList"></ol>
-    </div>
+<div id="resultScreen" class="hidden">
+  <h2>🏁 Quiz beendet!</h2>
+  <p id="finalScore"></p>
+  <div class="leaderboard" id="leaderboard">
+    <h3>🏆 Live-Ranking (Top 10)</h3>
+    <ol id="leaderboardList"></ol>
   </div>
+</div>
 
 <script>
+const POST_URL = https://script.google.com/macros/s/AKfycbzCWE2mw3OxEYrwgsvLqRydyLdVObzG-PZlGE7Mw06yMKFuTnUqxuD8RN0Uz54WJg1p_w/exec
+const GET_URL = https://script.google.com/macros/s/AKfycbzCWE2mw3OxEYrwgsvLqRydyLdVObzG-PZlGE7Mw06yMKFuTnUqxuD8RN0Uz54WJg1p_w/exec
+
 const questions = [
-  {
-    question: "Wofür steht „sld“?",
-    answers: ["Sound Light DJ's", "Sebastian, Liam, Daniel", "Sound, Light, Display"],
-    correct: 0
-  },
-  {
-    question: "Wann fand die Gewerbeanmeldung statt?",
-    answers: ["14.01.1995", "14.02.1995", "14.03.1995"],
-    correct: 1
-  },
-  {
-    question: "Wie heißen unsere 3 Kernbereiche?",
-    answers: ["Medientechnik, Veranstaltungsorganisation, Elektrotechnik", "Medientechnik, Veranstaltungstechnik, Elektroinstallation", "Medientechnik, Veranstaltungstechnik, Elektrotechnik"],
-    correct: 2
-  },
-  {
-    question: "Seit wann sind wir ServicePartner der NürnbergMesse?",
-    answers: ["seit Juni 2024", "seit Juli 2023", "seit August 2023"],
-    correct: 1
-  },
-  {
-    question: "Seit wann heißt der „Ball der Unternehmer“ CEOnite?",
-    answers: ["2023", "2024", "2025"],
-    correct: 1
-  },
-  {
-    question: "Womit hat Sebastian sein erstes Geld verdient?",
-    answers: ["Veranstalten kleiner Feiern", "Reparatur von Plattenspielern", "Zeitungen austragen"],
-    correct: 2
-  },
-  {
-    question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?",
-    answers: ["ab 2000", "ab 2002", "ab 1998"],
-    correct: 0
-  },
-  {
-    question: "Wie lang ist das installierte Media Mesh am Confex?",
-    answers: ["72m", "75m", "78m"],
-    correct: 0
-  }
+  { question: "Wofür steht „sld“?", answers: ["Sound Light DJ's", "Sebastian, Liam, Daniel", "Sound, Light, Display"], correct: 0 },
+  { question: "Wann fand die Gewerbeanmeldung statt?", answers: ["14.01.1995", "14.02.1995", "14.03.1995"], correct: 1 },
+  { question: "Wie heißen unsere 3 Kernbereiche?", answers: ["Medientechnik, Veranstaltungsorganisation, Elektrotechnik", "Medientechnik, Veranstaltungstechnik, Elektroinstallation", "Medientechnik, Veranstaltungstechnik, Elektrotechnik"], correct: 2 },
+  { question: "Seit wann sind wir ServicePartner der NürnbergMesse?", answers: ["seit Juni 2024", "seit Juli 2023", "seit August 2023"], correct: 1 },
+  { question: "Seit wann heißt der „Ball der Unternehmer“ CEOnite?", answers: ["2023", "2024", "2025"], correct: 1 },
+  { question: "Womit hat Sebastian sein erstes Geld verdient?", answers: ["Veranstalten kleiner Feiern", "Reparatur von Plattenspielern", "Zeitungen austragen"], correct: 2 },
+  { question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?", answers: ["ab 2000", "ab 2002", "ab 1998"], correct: 0 },
+  { question: "Wie lang ist das installierte Media Mesh am Confex?", answers: ["72m", "75m", "78m"], correct: 0 }
 ];
 
 let currentQuestion = 0;
@@ -140,7 +110,7 @@ function startTimer(seconds) {
     timerEl.textContent = time;
     if (time <= 0) {
       clearInterval(timerInterval);
-      selectAnswer(-1); // Timeout
+      selectAnswer(-1);
     }
   }, 1000);
 }
@@ -149,7 +119,6 @@ function selectAnswer(index) {
   clearInterval(timerInterval);
   const q = questions[currentQuestion];
   const isCorrect = index === q.correct;
-
   const timeTaken = Math.floor((Date.now() - startTime) / 1000);
   const base = isCorrect ? 1000 : 0;
   const timeBonus = isCorrect ? Math.max(0, 300 - timeTaken * 10) : 0;
@@ -171,14 +140,33 @@ function selectAnswer(index) {
 function showResults() {
   document.getElementById("quizScreen").classList.add("hidden");
   document.getElementById("resultScreen").classList.remove("hidden");
+
   const name = document.getElementById("playerName").value.trim();
   document.getElementById("finalScore").textContent = `${name}, deine Punktzahl: ${score}`;
 
-  const list = document.getElementById("leaderboardList");
-  list.innerHTML = "";
-  const li = document.createElement("li");
-  li.textContent = `${name} – ${score} Punkte`;
-  list.appendChild(li);
+  // Ergebnis senden
+  fetch(POST_URL, {
+    method: "POST",
+    body: JSON.stringify({ name, score }),
+    headers: { "Content-Type": "application/json" }
+  }).then(res => console.log("Ergebnis gesendet:", res.status))
+    .catch(err => console.error("Fehler beim Senden:", err));
+
+  // Ranking anzeigen
+  fetch(GET_URL)
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById("leaderboardList");
+      list.innerHTML = "";
+      data.slice(0, 10).forEach(entry => {
+        const li = document.createElement("li");
+        li.textContent = `#${entry.rank} ${entry.name} – ${entry.score} Punkte`;
+        list.appendChild(li);
+      });
+    })
+    .catch(err => {
+      console.error("Ranking konnte nicht geladen werden:", err);
+    });
 }
 </script>
 
