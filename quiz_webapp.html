@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sld Jubiläumsquiz</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+      text-align: center;
+    }
+    #quiz-container {
+      background: white;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    .question {
+      font-size: 1.2em;
+    }
+    .answers button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background: #eee;
+    }
+    .answers button:hover {
+      background: #ddd;
+    }
+    #start, #next, #restart {
+      padding: 10px 20px;
+      font-size: 1em;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    #timer {
+      font-weight: bold;
+      color: darkred;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+<div id="quiz-container">
+  <h1>sld Jubiläumsquiz</h1>
+  <div id="start-screen">
+    <p>Teste dein Wissen über sld! Du hast 30 Sekunden pro Frage.</p>
+    <button id="start">Start</button>
+  </div>
+
+  <div id="question-screen" style="display:none;">
+    <div id="timer">30</div>
+    <div class="question" id="question"></div>
+    <div class="answers" id="answers"></div>
+    <button id="next" style="display:none;">Nächste Frage</button>
+  </div>
+
+  <div id="end-screen" style="display:none;">
+    <h2>Quiz beendet!</h2>
+    <p>Deine Punktzahl: <span id="score"></span></p>
+    <button id="restart">Nochmal spielen</button>
+  </div>
+</div>
+
+<script>
+const quizData = [
+  {
+    question: "Wofür steht \"sld\"?",
+    answers: [
+      "Sound Light DJ's",
+      "Sebastian, Liam, Daniel",
+      "Sound, Light, Display"
+    ],
+    correct: 0
+  },
+  {
+    question: "Wann fand die Gewerbeanmeldung statt?",
+    answers: [
+      "14.01.1995",
+      "14.02.1995",
+      "14.03.1995"
+    ],
+    correct: 1
+  },
+  {
+    question: "Wie heißen unsere 3 Kernbereiche?",
+    answers: [
+      "Medientechnik, Veranstaltungsorganisation, Elektrotechnik",
+      "Medientechnik, Veranstaltungstechnik, Elektroinstallation",
+      "Medientechnik, Veranstaltungstechnik, Elektrotechnik"
+    ],
+    correct: 2
+  },
+  {
+    question: "Seit wann sind wir ServicePartner der NürnbergMesse?",
+    answers: [
+      "seit Juni 2024",
+      "seit Juli 2023",
+      "seit August 2023"
+    ],
+    correct: 1
+  },
+  {
+    question: "Seit wann heißt der \"Ball der Unternehmer\" CEOnite?",
+    answers: ["2023", "2024", "2025"],
+    correct: 1
+  },
+  {
+    question: "Womit hat Sebastian sein erstes Geld verdient?",
+    answers: [
+      "Veranstalten kleiner Feiern",
+      "Reparatur von Plattenspielern",
+      "Zeitungen austragen"
+    ],
+    correct: 2
+  },
+  {
+    question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?",
+    answers: ["ab 2000", "ab 2002", "ab 1998"],
+    correct: 0
+  },
+  {
+    question: "Wie lang ist das installierte Media Mesh am Confex?",
+    answers: ["72m", "75m", "78m"],
+    correct: 0
+  }
+];
+
+let current = 0;
+let score = 0;
+let timer;
+let timeLeft = 30;
+
+const startBtn = document.getElementById("start");
+const nextBtn = document.getElementById("next");
+const restartBtn = document.getElementById("restart");
+const questionEl = document.getElementById("question");
+const answersEl = document.getElementById("answers");
+const timerEl = document.getElementById("timer");
+
+startBtn.onclick = () => {
+  document.getElementById("start-screen").style.display = "none";
+  document.getElementById("question-screen").style.display = "block";
+  showQuestion();
+};
+
+nextBtn.onclick = () => {
+  current++;
+  if (current < quizData.length) {
+    showQuestion();
+  } else {
+    showEnd();
+  }
+};
+
+restartBtn.onclick = () => location.reload();
+
+function showQuestion() {
+  nextBtn.style.display = "none";
+  let q = quizData[current];
+  questionEl.textContent = q.question;
+  answersEl.innerHTML = "";
+  timeLeft = 30;
+  timerEl.textContent = timeLeft;
+  startTimer();
+
+  q.answers.forEach((answer, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = answer;
+    btn.onclick = () => handleAnswer(i === q.correct);
+    answersEl.appendChild(btn);
+  });
+}
+
+function handleAnswer(isCorrect) {
+  stopTimer();
+  if (isCorrect) {
+    score += 1000 - (30 - timeLeft) * 10;
+  }
+  nextBtn.style.display = "inline-block";
+  Array.from(answersEl.children).forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === quizData[current].answers[quizData[current].correct]) {
+      btn.style.background = '#c8e6c9';
+    } else {
+      btn.style.background = '#ffcdd2';
+    }
+  });
+}
+
+function startTimer() {
+  timer = setInterval(() => {
+    timeLeft--;
+    timerEl.textContent = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      handleAnswer(false);
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timer);
+}
+
+function showEnd() {
+  document.getElementById("question-screen").style.display = "none";
+  document.getElementById("end-screen").style.display = "block";
+  document.getElementById("score").textContent = score + " Punkte";
+}
+</script>
+</body>
+</html>
