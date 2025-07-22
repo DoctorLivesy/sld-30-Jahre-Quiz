@@ -47,146 +47,138 @@
   </div>
 </div>
 
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, get, child, query, orderByChild, limitToFirst } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<!-- Firebase SDKs (klassisch eingebunden) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAjdBgxFx6KU9OgzqYT31eXpZCxAFr48bk",
-  authDomain: "sld-quiz.firebaseapp.com",
-  databaseURL: "https://sld-quiz-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "sld-quiz",
-  storageBucket: "sld-quiz.firebasestorage.app",
-  messagingSenderId: "290545802541",
-  appId: "1:290545802541:web:5f4f16435cd39cce15c7a4"
-};
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAjdBgxFx6KU9OgzqYT31eXpZCxAFr48bk",
+    authDomain: "sld-quiz.firebaseapp.com",
+    databaseURL: "https://sld-quiz-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "sld-quiz",
+    storageBucket: "sld-quiz.firebasestorage.app",
+    messagingSenderId: "290545802541",
+    appId: "1:290545802541:web:5f4f16435cd39cce15c7a4"
+  };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-const questions = [
-  { question: "Wofür steht „sld“?", answers: ["Sound Light DJ's", "Sebastian, Liam, Daniel", "Sound, Light, Display"], correct: 0 },
-  { question: "Wann fand die Gewerbeanmeldung statt?", answers: ["14.01.1995", "14.02.1995", "14.03.1995"], correct: 1 },
-  { question: "Wie heißen unsere 3 Kernbereiche?", answers: ["Medientechnik, Veranstaltungsorganisation, Elektrotechnik", "Medientechnik, Veranstaltungstechnik, Elektroinstallation", "Medientechnik, Veranstaltungstechnik, Elektrotechnik"], correct: 2 },
-  { question: "Seit wann sind wir ServicePartner der NürnbergMesse?", answers: ["seit Juni 2024", "seit Juli 2023", "seit August 2023"], correct: 1 },
-  { question: "Seit wann heißt der „Ball der Unternehmer“ CEOnite?", answers: ["2023", "2024", "2025"], correct: 1 },
-  { question: "Womit hat Sebastian sein erstes Geld verdient?", answers: ["Veranstalten kleiner Feiern", "Reparatur von Plattenspielern", "Zeitungen austragen"], correct: 2 },
-  { question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?", answers: ["ab 2000", "ab 2002", "ab 1998"], correct: 0 },
-  { question: "Wie lang ist das installierte Media Mesh am Confex?", answers: ["72m", "75m", "78m"], correct: 0 }
-];
+  const questions = [
+    { question: "Wofür steht „sld“?", answers: ["Sound Light DJ's", "Sebastian, Liam, Daniel", "Sound, Light, Display"], correct: 0 },
+    { question: "Wann fand die Gewerbeanmeldung statt?", answers: ["14.01.1995", "14.02.1995", "14.03.1995"], correct: 1 },
+    { question: "Wie heißen unsere 3 Kernbereiche?", answers: ["Medientechnik, Veranstaltungsorganisation, Elektrotechnik", "Medientechnik, Veranstaltungstechnik, Elektroinstallation", "Medientechnik, Veranstaltungstechnik, Elektrotechnik"], correct: 2 },
+    { question: "Seit wann sind wir ServicePartner der NürnbergMesse?", answers: ["seit Juni 2024", "seit Juli 2023", "seit August 2023"], correct: 1 },
+    { question: "Seit wann heißt der „Ball der Unternehmer“ CEOnite?", answers: ["2023", "2024", "2025"], correct: 1 },
+    { question: "Womit hat Sebastian sein erstes Geld verdient?", answers: ["Veranstalten kleiner Feiern", "Reparatur von Plattenspielern", "Zeitungen austragen"], correct: 2 },
+    { question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?", answers: ["ab 2000", "ab 2002", "ab 1998"], correct: 0 },
+    { question: "Wie lang ist das installierte Media Mesh am Confex?", answers: ["72m", "75m", "78m"], correct: 0 }
+  ];
 
-let currentQuestion = 0;
-let score = 0;
-let startTime;
-let timerInterval;
+  let currentQuestion = 0;
+  let score = 0;
+  let startTime;
+  let timerInterval;
 
-function startQuiz() {
-  const name = document.getElementById("playerName").value.trim();
-  if (!name) {
-    alert("Bitte gib deinen Namen ein!");
-    return;
-  }
-  score = 0;
-  currentQuestion = 0;
-  document.getElementById("startScreen").classList.add("hidden");
-  document.getElementById("quizScreen").classList.remove("hidden");
-  nextQuestion();
-}
-
-function nextQuestion() {
-  if (currentQuestion >= questions.length) {
-    return showResults();
-  }
-  const q = questions[currentQuestion];
-  document.getElementById("questionNum").textContent = `Frage ${currentQuestion + 1} von ${questions.length}`;
-  document.getElementById("questionText").textContent = q.question;
-
-  const answerBox = document.getElementById("answerButtons");
-  answerBox.innerHTML = "";
-  q.answers.forEach((ans, idx) => {
-    const btn = document.createElement("button");
-    btn.textContent = ans;
-    btn.onclick = () => selectAnswer(idx);
-    answerBox.appendChild(btn);
-  });
-
-  startTime = Date.now();
-  startTimer(30);
-}
-
-function startTimer(seconds) {
-  const timerEl = document.getElementById("timer");
-  let time = seconds;
-  timerEl.textContent = time;
-  timerInterval = setInterval(() => {
-    time--;
-    timerEl.textContent = time;
-    if (time <= 0) {
-      clearInterval(timerInterval);
-      selectAnswer(-1);
+  function startQuiz() {
+    const name = document.getElementById("playerName").value.trim();
+    if (!name) {
+      alert("Bitte gib deinen Namen ein!");
+      return;
     }
-  }, 1000);
-}
-
-function selectAnswer(index) {
-  clearInterval(timerInterval);
-  const q = questions[currentQuestion];
-  const isCorrect = index === q.correct;
-  const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-  const base = isCorrect ? 1000 : 0;
-  const timeBonus = isCorrect ? Math.max(0, 300 - timeTaken * 10) : 0;
-  score += base + timeBonus;
-
-  const buttons = document.querySelectorAll("#answerButtons button");
-  buttons.forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === q.correct) btn.classList.add("correct");
-    if (i === index && i !== q.correct) btn.classList.add("wrong");
-  });
-
-  setTimeout(() => {
-    currentQuestion++;
+    score = 0;
+    currentQuestion = 0;
+    document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("quizScreen").classList.remove("hidden");
     nextQuestion();
-  }, 2000);
-}
+  }
 
-function showResults() {
-  document.getElementById("quizScreen").classList.add("hidden");
-  document.getElementById("resultScreen").classList.remove("hidden");
+  function nextQuestion() {
+    if (currentQuestion >= questions.length) {
+      return showResults();
+    }
+    const q = questions[currentQuestion];
+    document.getElementById("questionNum").textContent = `Frage ${currentQuestion + 1} von ${questions.length}`;
+    document.getElementById("questionText").textContent = q.question;
 
-  const name = document.getElementById("playerName").value.trim();
-  document.getElementById("finalScore").textContent = `${name}, deine Punktzahl: ${score}`;
+    const answerBox = document.getElementById("answerButtons");
+    answerBox.innerHTML = "";
+    q.answers.forEach((ans, idx) => {
+      const btn = document.createElement("button");
+      btn.textContent = ans;
+      btn.onclick = () => selectAnswer(idx);
+      answerBox.appendChild(btn);
+    });
 
-  // Punkte in Firebase speichern
-  push(ref(db, "scores"), {
-    name: name,
-    score: score,
-    timestamp: Date.now()
-  });
+    startTime = Date.now();
+    startTimer(30);
+  }
 
-  // Ranking laden
-  const list = document.getElementById("leaderboardList");
-  list.innerHTML = "";
-  const topScoresRef = query(ref(db, "scores"), orderByChild("score"), limitToFirst(100));
+  function startTimer(seconds) {
+    const timerEl = document.getElementById("timer");
+    let time = seconds;
+    timerEl.textContent = time;
+    timerInterval = setInterval(() => {
+      time--;
+      timerEl.textContent = time;
+      if (time <= 0) {
+        clearInterval(timerInterval);
+        selectAnswer(-1);
+      }
+    }, 1000);
+  }
 
-  get(topScoresRef).then(snapshot => {
-    if (snapshot.exists()) {
-      const data = [];
-      snapshot.forEach(child => data.push(child.val()));
-      data.sort((a, b) => b.score - a.score);
-      data.slice(0, 10).forEach((entry, i) => {
+  function selectAnswer(index) {
+    clearInterval(timerInterval);
+    const q = questions[currentQuestion];
+    const isCorrect = index === q.correct;
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+    const base = isCorrect ? 1000 : 0;
+    const timeBonus = isCorrect ? Math.max(0, 300 - timeTaken * 10) : 0;
+    score += base + timeBonus;
+
+    const buttons = document.querySelectorAll("#answerButtons button");
+    buttons.forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === q.correct) btn.classList.add("correct");
+      if (i === index && i !== q.correct) btn.classList.add("wrong");
+    });
+
+    setTimeout(() => {
+      currentQuestion++;
+      nextQuestion();
+    }, 2000);
+  }
+
+  function showResults() {
+    document.getElementById("quizScreen").classList.add("hidden");
+    document.getElementById("resultScreen").classList.remove("hidden");
+
+    const name = document.getElementById("playerName").value.trim();
+    document.getElementById("finalScore").textContent = `${name}, deine Punktzahl: ${score}`;
+
+    db.ref("scores").push({
+      name: name,
+      score: score,
+      timestamp: Date.now()
+    });
+
+    const list = document.getElementById("leaderboardList");
+    list.innerHTML = "";
+
+    db.ref("scores").orderByChild("score").limitToLast(10).once("value", (snapshot) => {
+      const entries = [];
+      snapshot.forEach(child => entries.push(child.val()));
+      entries.reverse(); // höchste zuerst
+      entries.forEach((entry, i) => {
         const li = document.createElement("li");
         li.textContent = `#${i + 1} ${entry.name} – ${entry.score} Punkte`;
         list.appendChild(li);
       });
-    }
-  });
-}
+    });
+  }
 </script>
-
-</body>
-</html>
 
 </body>
 </html>
