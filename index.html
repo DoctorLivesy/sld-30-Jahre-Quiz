@@ -5,180 +5,197 @@
   <title>sld Jubiläums-Quiz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: sans-serif; background: #111; color: #fff; text-align: center; padding: 2em; }
-    h1, h2 { color: #0ff; }
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 1em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #0ff;
+    }
+    .question-box {
+      background: #222;
+      padding: 1em;
+      border-radius: 10px;
+      margin-top: 1em;
+    }
+    .answers button {
+      display: block;
+      width: 100%;
+      margin: 0.5em 0;
+      padding: 1em;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      background: #444;
+      color: white;
+    }
+    .answers button.correct { background: green; }
+    .answers button.wrong { background: red; }
     .hidden { display: none; }
-    .question-box { margin: 2em auto; max-width: 600px; background: #222; padding: 1em; border-radius: 8px; }
-    .answers button { display: block; margin: 0.5em auto; padding: 0.5em 1em; font-size: 1em; width: 100%; border-radius: 5px; cursor: pointer; }
-    .answers button:hover { background: #444; }
-    .timer { font-size: 2em; color: #0f0; margin: 0.5em 0; }
-    .leaderboard { text-align: left; max-width: 400px; margin: 2em auto; background: #222; padding: 1em; border-radius: 8px; }
-    .correct { background: green; color: white; }
-    .wrong { background: red; color: white; }
-    input { padding: 0.5em; font-size: 1em; border-radius: 5px; }
-    button { background: #0ff; border: none; padding: 0.5em 1em; margin-top: 1em; cursor: pointer; font-weight: bold; }
+    .timer {
+      font-size: 1.5em;
+      margin-bottom: 1em;
+      color: #0f0;
+    }
   </style>
 </head>
 <body>
-
-<div id="startScreen">
+<div class="container">
   <h1>🎉 sld Jubiläums-Quiz 🎉</h1>
-  <p>8 Fragen · 30 Sekunden pro Frage · Punkte für Schnelligkeit</p>
-  <input type="text" id="playerName" placeholder="Gib deinen Namen ein" />
-  <br>
-  <button onclick="startQuiz()">Quiz starten</button>
-</div>
+  <p>8 Fragen · 30 Sekunden pro Frage</p>
 
-<div id="quizScreen" class="hidden">
-  <div class="question-box">
-    <div id="questionNum"></div>
-    <div id="questionText"></div>
-    <div class="timer" id="timer">30</div>
-    <div class="answers" id="answerButtons"></div>
+  <div id="startScreen">
+    <button onclick="startQuiz()">Quiz starten</button>
+  </div>
+
+  <div id="quizScreen" class="hidden">
+    <div class="question-box">
+      <div id="questionNum"></div>
+      <div id="questionText"></div>
+      <div class="timer" id="timer">30</div>
+      <div class="answers" id="answerButtons"></div>
+    </div>
+  </div>
+
+  <div id="resultScreen" class="hidden">
+    <h2>🏁 Quiz beendet!</h2>
+    <p id="finalScore"></p>
+    <p>Bitte Ergebnis dem Moderator zeigen 📋</p>
   </div>
 </div>
-
-<div id="resultScreen" class="hidden">
-  <h2>🏁 Quiz beendet!</h2>
-  <p id="finalScore"></p>
-  <div class="leaderboard" id="leaderboard">
-    <h3>🏆 Live-Ranking (Top 10)</h3>
-    <ol id="leaderboardList"></ol>
-  </div>
-</div>
-
-<!-- Firebase SDKs (klassisch eingebunden) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAjdBgxFx6KU9OgzqYT31eXpZCxAFr48bk",
-    authDomain: "sld-quiz.firebaseapp.com",
-    databaseURL: "https://sld-quiz-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "sld-quiz",
-    storageBucket: "sld-quiz.firebasestorage.app",
-    messagingSenderId: "290545802541",
-    appId: "1:290545802541:web:5f4f16435cd39cce15c7a4"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const questions = [
-    { question: "Wofür steht „sld“?", answers: ["Sound Light DJ's", "Sebastian, Liam, Daniel", "Sound, Light, Display"], correct: 0 },
-    { question: "Wann fand die Gewerbeanmeldung statt?", answers: ["14.01.1995", "14.02.1995", "14.03.1995"], correct: 1 },
-    { question: "Wie heißen unsere 3 Kernbereiche?", answers: ["Medientechnik, Veranstaltungsorganisation, Elektrotechnik", "Medientechnik, Veranstaltungstechnik, Elektroinstallation", "Medientechnik, Veranstaltungstechnik, Elektrotechnik"], correct: 2 },
-    { question: "Seit wann sind wir ServicePartner der NürnbergMesse?", answers: ["seit Juni 2024", "seit Juli 2023", "seit August 2023"], correct: 1 },
-    { question: "Seit wann heißt der „Ball der Unternehmer“ CEOnite?", answers: ["2023", "2024", "2025"], correct: 1 },
-    { question: "Womit hat Sebastian sein erstes Geld verdient?", answers: ["Veranstalten kleiner Feiern", "Reparatur von Plattenspielern", "Zeitungen austragen"], correct: 2 },
-    { question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?", answers: ["ab 2000", "ab 2002", "ab 1998"], correct: 0 },
-    { question: "Wie lang ist das installierte Media Mesh am Confex?", answers: ["72m", "75m", "78m"], correct: 0 }
-  ];
-
-  let currentQuestion = 0;
-  let score = 0;
-  let startTime;
-  let timerInterval;
-
-  function startQuiz() {
-    const name = document.getElementById("playerName").value.trim();
-    if (!name) {
-      alert("Bitte gib deinen Namen ein!");
-      return;
-    }
-    score = 0;
-    currentQuestion = 0;
-    document.getElementById("startScreen").classList.add("hidden");
-    document.getElementById("quizScreen").classList.remove("hidden");
-    nextQuestion();
+const questions = [
+  {
+    question: "Wofür steht „sld“?<br><i>What does “sld” stand for?</i>",
+    answers: ["Sound Light DJ's", "Sebastian, Liam, Daniel", "Sound, Light, Display"],
+    correct: 0
+  },
+  {
+    question: "Wann fand die Gewerbeanmeldung statt?<br><i>When was the business registered?</i>",
+    answers: ["14.01.1995", "14.02.1995", "14.03.1995"],
+    correct: 1
+  },
+  {
+    question: "Wie heißen unsere 3 Kernbereiche?<br><i>What are our 3 core areas?</i>",
+    answers: [
+      "Medientechnik, Veranstaltungsorganisation, Elektrotechnik",
+      "Medientechnik, Veranstaltungstechnik, Elektroinstallation",
+      "Medientechnik, Veranstaltungstechnik, Elektrotechnik"
+    ],
+    correct: 2
+  },
+  {
+    question: "Seit wann sind wir ServicePartner der NürnbergMesse?<br><i>Since when are we a service partner of NürnbergMesse?</i>",
+    answers: ["seit Juni 2024", "seit Juli 2023", "seit August 2023"],
+    correct: 1
+  },
+  {
+    question: "Seit wann heißt der „Ball der Unternehmer“ CEOnite?<br><i>Since when is the 'Ball der Unternehmer' called CEOnite?</i>",
+    answers: ["2023", "2024", "2025"],
+    correct: 1
+  },
+  {
+    question: "Womit hat Sebastian sein erstes Geld verdient?<br><i>How did Sebastian earn his first money?</i>",
+    answers: [
+      "Veranstalten kleiner Feiern",
+      "Reparatur von Plattenspielern",
+      "Zeitungen austragen"
+    ],
+    correct: 2
+  },
+  {
+    question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?<br><i>Since when did the founders start sld full-time?</i>",
+    answers: ["ab 2000", "ab 2002", "ab 1998"],
+    correct: 0
+  },
+  {
+    question: "Wie lang ist das installierte Media Mesh am Confex?<br><i>How long is the installed media mesh on the Confex facade?</i>",
+    answers: ["72m", "75m", "78m"],
+    correct: 0
   }
+];
 
-  function nextQuestion() {
-    if (currentQuestion >= questions.length) {
-      return showResults();
-    }
-    const q = questions[currentQuestion];
-    document.getElementById("questionNum").textContent = `Frage ${currentQuestion + 1} von ${questions.length}`;
-    document.getElementById("questionText").textContent = q.question;
+let currentQuestion = 0;
+let score = 0;
+let timerInterval;
+let startTime = 0;
 
-    const answerBox = document.getElementById("answerButtons");
-    answerBox.innerHTML = "";
-    q.answers.forEach((ans, idx) => {
-      const btn = document.createElement("button");
-      btn.textContent = ans;
-      btn.onclick = () => selectAnswer(idx);
-      answerBox.appendChild(btn);
-    });
+function startQuiz() {
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  currentQuestion = 0;
+  score = 0;
+  showQuestion();
+}
 
-    startTime = Date.now();
-    startTimer(30);
-  }
+function showQuestion() {
+  const q = questions[currentQuestion];
+  document.getElementById("questionNum").innerHTML = "Frage " + (currentQuestion + 1) + " / " + questions.length;
+  document.getElementById("questionText").innerHTML = q.question;
 
-  function startTimer(seconds) {
-    const timerEl = document.getElementById("timer");
-    let time = seconds;
+  const answerButtons = document.getElementById("answerButtons");
+  answerButtons.innerHTML = "";
+  q.answers.forEach((answer, index) => {
+    const btn = document.createElement("button");
+    btn.innerHTML = answer;
+    btn.onclick = () => selectAnswer(index, btn);
+    answerButtons.appendChild(btn);
+  });
+
+  startTime = Date.now();
+  let time = 30;
+  const timerEl = document.getElementById("timer");
+  timerEl.textContent = time;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    time--;
     timerEl.textContent = time;
-    timerInterval = setInterval(() => {
-      time--;
-      timerEl.textContent = time;
-      if (time <= 0) {
-        clearInterval(timerInterval);
-        selectAnswer(-1);
-      }
-    }, 1000);
+    if (time <= 0) {
+      clearInterval(timerInterval);
+      selectAnswer(-1);
+    }
+  }, 1000);
+}
+
+function selectAnswer(index, button = null) {
+  clearInterval(timerInterval);
+  const q = questions[currentQuestion];
+  const isCorrect = index === q.correct;
+
+  if (button) {
+    button.classList.add(isCorrect ? "correct" : "wrong");
   }
 
-  function selectAnswer(index) {
-    clearInterval(timerInterval);
-    const q = questions[currentQuestion];
-    const isCorrect = index === q.correct;
-    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-    const base = isCorrect ? 1000 : 0;
-    const timeBonus = isCorrect ? Math.max(0, 300 - timeTaken * 10) : 0;
-    score += base + timeBonus;
+  if (isCorrect) score += 1;
 
-    const buttons = document.querySelectorAll("#answerButtons button");
-    buttons.forEach((btn, i) => {
-      btn.disabled = true;
-      if (i === q.correct) btn.classList.add("correct");
-      if (i === index && i !== q.correct) btn.classList.add("wrong");
-    });
+  setTimeout(() => {
+    currentQuestion++;
+    if (currentQuestion < questions.length) {
+      showQuestion();
+    } else {
+      showResults();
+    }
+  }, 1000);
+}
 
-    setTimeout(() => {
-      currentQuestion++;
-      nextQuestion();
-    }, 2000);
-  }
-
-  function showResults() {
-    document.getElementById("quizScreen").classList.add("hidden");
-    document.getElementById("resultScreen").classList.remove("hidden");
-
-    const name = document.getElementById("playerName").value.trim();
-    document.getElementById("finalScore").textContent = `${name}, deine Punktzahl: ${score}`;
-
-    db.ref("scores").push({
-      name: name,
-      score: score,
-      timestamp: Date.now()
-    });
-
-    const list = document.getElementById("leaderboardList");
-    list.innerHTML = "";
-
-    db.ref("scores").orderByChild("score").limitToLast(10).once("value", (snapshot) => {
-      const entries = [];
-      snapshot.forEach(child => entries.push(child.val()));
-      entries.reverse(); // höchste zuerst
-      entries.forEach((entry, i) => {
-        const li = document.createElement("li");
-        li.textContent = `#${i + 1} ${entry.name} – ${entry.score} Punkte`;
-        list.appendChild(li);
-      });
-    });
-  }
+function showResults() {
+  document.getElementById("quizScreen").classList.add("hidden");
+  document.getElementById("resultScreen").classList.remove("hidden");
+  document.getElementById("finalScore").innerHTML =
+    "Dein Ergebnis: <strong>" + score + "</strong> von " + questions.length + " Punkten.";
+}
 </script>
-
 </body>
 </html>
