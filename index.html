@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>sld Jubiläums-Quiz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: sans-serif;
       background: #111;
       color: #fff;
-      margin: 0;
+      font-family: sans-serif;
       padding: 1em;
       display: flex;
       flex-direction: column;
@@ -20,8 +19,8 @@
       width: 100%;
     }
     h1, h2 {
-      text-align: center;
       color: #0ff;
+      text-align: center;
     }
     .question-box {
       background: #222;
@@ -30,98 +29,109 @@
       margin-top: 1em;
     }
     .answers button {
-      display: block;
       width: 100%;
-      margin: 0.5em 0;
       padding: 1em;
+      margin: 0.5em 0;
       font-size: 1em;
-      border-radius: 8px;
       border: none;
-      background: #444;
-      color: white;
+      border-radius: 8px;
+      background-color: #444;
+      color: #fff;
     }
-    .answers button.correct { background: green; }
-    .answers button.wrong { background: red; }
-    .hidden { display: none; }
+    .answers button.selected {
+      background-color: #06f;
+    }
+    .hidden {
+      display: none;
+    }
     .timer {
       font-size: 1.5em;
-      margin-bottom: 1em;
       color: #0f0;
+      margin-bottom: 0.5em;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>🎉 sld Jubiläums-Quiz 🎉</h1>
-  <p>8 Fragen · 30 Sekunden pro Frage</p>
+  <div class="container">
+    <h1>🎉 sld Jubiläums-Quiz 🎉</h1>
+    <p>8 Fragen · 30 Sekunden pro Frage · Punkte für Schnelligkeit</p>
 
-  <div id="startScreen">
-    <button onclick="startQuiz()">Quiz starten</button>
-  </div>
+    <div id="startScreen">
+      <button onclick="startQuiz()">Quiz starten</button>
+    </div>
 
-  <div id="quizScreen" class="hidden">
-    <div class="question-box">
-      <div id="questionNum"></div>
-      <div id="questionText"></div>
-      <div class="timer" id="timer">30</div>
-      <div class="answers" id="answerButtons"></div>
+    <div id="quizScreen" class="hidden">
+      <div class="question-box">
+        <div id="questionNum"></div>
+        <div id="questionText"></div>
+        <div class="timer" id="timer">30</div>
+        <div class="answers" id="answerButtons"></div>
+      </div>
+    </div>
+
+    <div id="resultScreen" class="hidden">
+      <h2>🏁 Quiz beendet!</h2>
+      <p id="finalScore"></p>
+      <p>Bitte zeige dein Ergebnis dem Moderator.</p>
     </div>
   </div>
-
-  <div id="resultScreen" class="hidden">
-    <h2>🏁 Quiz beendet!</h2>
-    <p id="finalScore"></p>
-    <p>Bitte Ergebnis dem Moderator zeigen 📋</p>
-  </div>
-</div>
 
 <script>
 const questions = [
   {
     question: "Wofür steht „sld“?<br><i>What does “sld” stand for?</i>",
-    answers: ["Sound Light DJ's", "Sebastian, Liam, Daniel", "Sound, Light, Display"],
+    answers: [
+      "Sound Light DJ’s<br><i>Sound Light DJ’s</i>",
+      "Sebastian, Liam, Daniel<br><i>Sebastian, Liam, Daniel</i>",
+      "Sound, Light, Display<br><i>Sound, Light, Display</i>"
+    ],
     correct: 0
   },
   {
     question: "Wann fand die Gewerbeanmeldung statt?<br><i>When was the business registered?</i>",
-    answers: ["14.01.1995", "14.02.1995", "14.03.1995"],
+    answers: [
+      "14.01.1995",
+      "14.02.1995",
+      "14.03.1995"
+    ],
     correct: 1
   },
   {
     question: "Wie heißen unsere 3 Kernbereiche?<br><i>What are our 3 core areas?</i>",
     answers: [
-      "Medientechnik, Veranstaltungsorganisation, Elektrotechnik",
-      "Medientechnik, Veranstaltungstechnik, Elektroinstallation",
-      "Medientechnik, Veranstaltungstechnik, Elektrotechnik"
+      "Medientechnik, Veranstaltungsorganisation, Elektrotechnik<br><i>Media Technology, Event Organization, Electrical Engineering</i>",
+      "Medientechnik, Veranstaltungstechnik, Elektroinstallation<br><i>Media Technology, Event Technology, Electrical Installation</i>",
+      "Medientechnik, Veranstaltungstechnik, Elektrotechnik<br><i>Media Technology, Event Technology, Electrical Engineering</i>"
     ],
     correct: 2
   },
   {
     question: "Seit wann sind wir ServicePartner der NürnbergMesse?<br><i>Since when are we a service partner of NürnbergMesse?</i>",
-    answers: ["seit Juni 2024", "seit Juli 2023", "seit August 2023"],
+    answers: ["Juni 2024", "Juli 2023", "August 2023"],
     correct: 1
   },
   {
-    question: "Seit wann heißt der „Ball der Unternehmer“ CEOnite?<br><i>Since when is the 'Ball der Unternehmer' called CEOnite?</i>",
+    question: "Seit wann heißt der „Ball der Unternehmer“ CEOnite?<br><i>Since when is it called CEOnite?</i>",
     answers: ["2023", "2024", "2025"],
     correct: 1
   },
   {
     question: "Womit hat Sebastian sein erstes Geld verdient?<br><i>How did Sebastian earn his first money?</i>",
     answers: [
-      "Veranstalten kleiner Feiern",
-      "Reparatur von Plattenspielern",
-      "Zeitungen austragen"
+      "Veranstalten kleiner Feiern<br><i>Organizing small parties</i>",
+      "Reparatur von Plattenspielern<br><i>Repairing turntables</i>",
+      "Zeitungen austragen<br><i>Delivering newspapers</i>"
     ],
     correct: 2
   },
   {
-    question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?<br><i>Since when did the founders start sld full-time?</i>",
+    question: "Ab wann haben die drei Gründer sld Vollzeit ausgeübt?<br><i>Since when did the three founders work full-time on sld?</i>",
     answers: ["ab 2000", "ab 2002", "ab 1998"],
     correct: 0
   },
   {
-    question: "Wie lang ist das installierte Media Mesh am Confex?<br><i>How long is the installed media mesh on the Confex facade?</i>",
+    question: "Wie lang ist das Media Mesh am Confex?<br><i>How long is the installed Media Mesh at Confex?</i>",
     answers: ["72m", "75m", "78m"],
     correct: 0
   }
@@ -129,63 +139,64 @@ const questions = [
 
 let currentQuestion = 0;
 let score = 0;
-let timerInterval;
+let selected = false;
 let startTime = 0;
+let timerInterval;
 
 function startQuiz() {
   document.getElementById("startScreen").classList.add("hidden");
   document.getElementById("quizScreen").classList.remove("hidden");
-  currentQuestion = 0;
   score = 0;
+  currentQuestion = 0;
   showQuestion();
 }
 
 function showQuestion() {
   const q = questions[currentQuestion];
-  document.getElementById("questionNum").innerHTML = "Frage " + (currentQuestion + 1) + " / " + questions.length;
-  document.getElementById("questionText").innerHTML = q.question;
-
+  const questionNum = document.getElementById("questionNum");
+  const questionText = document.getElementById("questionText");
   const answerButtons = document.getElementById("answerButtons");
+  const timerEl = document.getElementById("timer");
+
+  questionNum.textContent = `Frage ${currentQuestion + 1} / ${questions.length}`;
+  questionText.innerHTML = q.question;
   answerButtons.innerHTML = "";
-  q.answers.forEach((answer, index) => {
+  selected = false;
+
+  q.answers.forEach((text, index) => {
     const btn = document.createElement("button");
-    btn.innerHTML = answer;
-    btn.onclick = () => selectAnswer(index, btn);
+    btn.innerHTML = text;
+    btn.onclick = () => {
+      if (!selected) {
+        selected = true;
+        const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+        const isCorrect = index === q.correct;
+        if (isCorrect) {
+          let bonus = Math.max(0, 1000 - timeTaken * 20);
+          if (bonus < 300) bonus = 300;
+          score += bonus;
+        }
+        btn.classList.add("selected");
+      }
+    };
     answerButtons.appendChild(btn);
   });
 
-  startTime = Date.now();
   let time = 30;
-  const timerEl = document.getElementById("timer");
   timerEl.textContent = time;
+  startTime = Date.now();
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     time--;
     timerEl.textContent = time;
     if (time <= 0) {
       clearInterval(timerInterval);
-      selectAnswer(-1);
-    }
-  }, 1000);
-}
-
-function selectAnswer(index, button = null) {
-  clearInterval(timerInterval);
-  const q = questions[currentQuestion];
-  const isCorrect = index === q.correct;
-
-  if (button) {
-    button.classList.add(isCorrect ? "correct" : "wrong");
-  }
-
-  if (isCorrect) score += 1;
-
-  setTimeout(() => {
-    currentQuestion++;
-    if (currentQuestion < questions.length) {
-      showQuestion();
-    } else {
-      showResults();
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResults();
+      }
     }
   }, 1000);
 }
@@ -194,7 +205,7 @@ function showResults() {
   document.getElementById("quizScreen").classList.add("hidden");
   document.getElementById("resultScreen").classList.remove("hidden");
   document.getElementById("finalScore").innerHTML =
-    "Dein Ergebnis: <strong>" + score + "</strong> von " + questions.length + " Punkten.";
+    `Dein Score: <strong>${score}</strong> Punkte`;
 }
 </script>
 </body>
